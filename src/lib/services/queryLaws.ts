@@ -40,7 +40,7 @@ export class LawQueryService {
         { name: 'seq', type: 'number', description: 'Sequence number of the law' },
       ],
       searchParams: {
-        k: 20,
+        k:3,
       }
     });
   }
@@ -49,6 +49,12 @@ export class LawQueryService {
     const llm = createOpenAIInstance();
     const structuredLlm = createChatInstanceToParseJson();
     const retriever = await this.createRetriever();
+    const docs =await retriever._getRelevantDocuments(query);
+    const limitedDocs = docs.slice(0, 3);
+    const context = limitedDocs
+    .map(doc => `Title: ${doc.metadata.title || 'N/A'}\nText: ${doc.pageContent}`)
+    .join('\n\n');
+
     const prompt = ChatPromptTemplate.fromTemplate(`
       You are a legal assistant. Answer the question based on the provided legal documents.
       If you're unsure or the information isn't in the documents, say so.
@@ -62,7 +68,7 @@ export class LawQueryService {
 
     const ragChain = RunnableSequence.from([
       {
-        context: retriever.pipe(this.formatDocs),
+        context:()=> context,
         question: new RunnablePassthrough(),
       },
       prompt,

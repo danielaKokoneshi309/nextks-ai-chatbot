@@ -23,6 +23,7 @@ export default function Chat() {
     ];
     setMessages(newMessages);
     setInput('');
+    try{
     const result = await LawQuery(input);
     if (result.results) {
       setMessages([
@@ -31,12 +32,21 @@ export default function Chat() {
           role: 'assistant',
           content: result.results.map(r => 
             `${r.title ? `Title: ${r.title}\n` : ''}${r.queryResult}`
-          ).join('\n\n'), 
+          ).join('\n\n')|| "I couldn't find relevant information for your query.", 
         },
       ]);
     }
   }
-  
+  catch(error){
+    setMessages([
+      ...newMessages,
+      {
+        role: 'assistant',
+        content: "I couldn't find relevant information for your question.",
+      },
+    ]);
+  }
+  }
   return (    
     <div className="group w-full overflow-auto ">
       {messages.length <= 0 ? ( 

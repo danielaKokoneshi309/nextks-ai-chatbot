@@ -3,7 +3,6 @@
 import { createStreamableValue } from 'ai/rsc';
 import { CoreMessage, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { Weather } from '@/components/weather';
 import { generateText } from 'ai';
 import { createStreamableUI } from 'ai/rsc';
 import { ReactNode } from 'react';
@@ -46,7 +45,7 @@ export async function continueConversation(history: Message[]) {
             .describe('The unit to display the temperature in'),
         }),
         execute: async ({ city, unit }) => {
-          stream.done(<Weather city={city} unit={unit} />);
+      
           return `Here's the weather for ${city}!`; 
         },
       },
@@ -71,14 +70,16 @@ export async function LawQuery(query: string) {
 
   try {
     const results = await LawQueryService.QueryLaws(query);
-    
+    stream.done();
+
     return {
       results,
       display: stream.value,
     };
   } catch (error) {
-    console.error('Company query error:', error);
-    throw new Error('Failed to process company query');
+    stream.done();
+    console.error('Law query error:', error);
+    throw new Error('Failed to process law query');
   }
 }
 // Utils
