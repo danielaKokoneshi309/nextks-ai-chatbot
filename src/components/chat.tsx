@@ -3,8 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { type CoreMessage } from 'ai';
 import { useState } from 'react';
-import { continueTextConversation } from '@/app/actions';
-import { readStreamableValue } from 'ai/rsc';
+import {  LawQuery } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { IconArrowUp } from '@/components/ui/icons';
@@ -24,13 +23,15 @@ export default function Chat() {
     ];
     setMessages(newMessages);
     setInput('');
-    const result = await continueTextConversation(newMessages);
-    for await (const content of readStreamableValue(result)) {
+    const result = await LawQuery(input);
+    if (result.results) {
       setMessages([
         ...newMessages,
         {
           role: 'assistant',
-          content: content as string, 
+          content: result.results.map(r => 
+            `${r.title ? `Title: ${r.title}\n` : ''}${r.queryResult}`
+          ).join('\n\n'), 
         },
       ]);
     }

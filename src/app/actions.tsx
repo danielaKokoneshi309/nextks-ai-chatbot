@@ -8,6 +8,7 @@ import { generateText } from 'ai';
 import { createStreamableUI } from 'ai/rsc';
 import { ReactNode } from 'react';
 import { z } from 'zod';
+import { LawQueryService } from '@/lib/services/queryLaws';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -65,6 +66,21 @@ export async function continueConversation(history: Message[]) {
   };
 }
 
+export async function LawQuery(query: string) {
+  const stream = createStreamableUI();
+
+  try {
+    const results = await LawQueryService.QueryLaws(query);
+    
+    return {
+      results,
+      display: stream.value,
+    };
+  } catch (error) {
+    console.error('Company query error:', error);
+    throw new Error('Failed to process company query');
+  }
+}
 // Utils
 export async function checkAIAvailability() {
   const envVarExists = !!process.env.OPENAI_API_KEY;
