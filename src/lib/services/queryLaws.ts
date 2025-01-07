@@ -10,21 +10,10 @@ import { QueryResult } from '../../types/companies';
 
 export class LawQueryService {
   private static formatDocs(docs: Document[]) {
-    const groupedDocs = docs.reduce((acc, doc) => {
-      const reportType = doc.metadata.report_type;
-      if (!acc[reportType]) {
-        acc[reportType] = [];
-      }
-      acc[reportType].push(doc);
-      return acc;
-    }, {} as Record<string, Document[]>);
-
-    return Object.entries(groupedDocs).flatMap(([reportType, documentsGrouped]) =>
-      documentsGrouped.map((doc) => ({
-        reportType,
-        document: JSON.stringify(doc),
-      })),
-    );
+    return docs.map(doc => ({
+      abbreviation: doc.metadata.abbreviation || null,
+      text: doc.pageContent,
+    }));
   }
 
   private static async createRetriever() {
@@ -40,7 +29,7 @@ export class LawQueryService {
         { name: 'seq', type: 'number', description: 'Sequence number of the law' },
       ],
       searchParams: {
-        k:3,
+        k:5,
       }
     });
   }
@@ -50,15 +39,17 @@ export class LawQueryService {
     const structuredLlm = createChatInstanceToParseJson();
     const retriever = await this.createRetriever();
     const docs =await retriever._getRelevantDocuments(query);
-    const limitedDocs = docs.slice(0, 3);
-    const context = limitedDocs
-    .map(doc => `Title: ${doc.metadata.title || 'N/A'}\nText: ${doc.pageContent}`)
-    .join('\n\n');
-
+    const formattedDocs = this.formatDocs(docs);
+ 
+      const context = formattedDocs
+        .map(doc => `Title: ${doc.abbreviation}\nText: ${doc.text}`)
+        .join('\n\n');
+      console.log(context);
     const prompt = ChatPromptTemplate.fromTemplate(`
-      You are a legal assistant. Answer the question based on the provided legal documents.
+      You are a legal assistant.Answer the question based on the provided legal documents.
+      The answer should be in the language of the question.
+      The answer should be detailed and comprehensive with a minium of 200 words.
       If you're unsure or the information isn't in the documents, say so.
-      Always cite your sources.
 
       Context: {context}
       Question: {question}
@@ -75,9 +66,10 @@ export class LawQueryService {
       llm,
       new StringOutputParser(),
     ]);
-
+    console.log(ragChain);
     const results = await ragChain.invoke(query);
-    const structured = await structuredLlm.invoke(results);
+    console.log(results);
+   const structured = await structuredLlm.invoke(results);
     return structured.results || [];
   }
 }
