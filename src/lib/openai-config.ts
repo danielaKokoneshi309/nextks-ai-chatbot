@@ -5,6 +5,7 @@ import { CONFIG } from './config';
 const chatJsonResponse = zod.object({
     results: zod.array(zod.object({
       abbreviation: zod.string().describe('Law abbreviation').nullable(),
+      tags: zod.array(zod.string()).describe('Tags associated with the law').nullable(),
       title: zod.string().describe('Law title').nullable(),
       text: zod.string().describe('Law text').nullable(),
       queryResult: zod.string().describe('Result from the query'),
