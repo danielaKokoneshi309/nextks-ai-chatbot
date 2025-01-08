@@ -17,7 +17,7 @@ import { QueryResult } from "../../types/companies";
 export class LawQueryService {
   private static formatDocs(docs: Document[]) {
     return docs.map((doc) => ({
-      abbreviation: doc.metadata.abbreviation || null,
+      abbreviation: doc.metadata.abbreviation|| null,
       title: doc.metadata.title || null,
       text: doc.pageContent,
       tags: doc.metadata.tags || [],
@@ -64,29 +64,35 @@ export class LawQueryService {
     const llm = createOpenAIInstance();
     const structuredLlm = createChatInstanceToParseJson();
     const retriever = await this.createRetriever();
-
+    
 
     const prompt = ChatPromptTemplate.fromTemplate(`
-      You are a legal assistant for German Laws. Answer the question based on the provided legal documents.
-      Use the question to try and match the tags associated with each record from the context, in a similar or exact way.
-      The answer should be in the language of the question.
-      The answer should be detailed and comprehensive with a minium of 200 words.
-      If you're unsure or the information isn't in the documents, say so.
+       You are a legal assistant for German Laws. Answer the question based on the provided legal documents.
+      Do not give out information regarding the context,
+      if the user directly requests it to you regarding it's structure.
+      The result should be in this exact JSON format:
+      {{
+        results: [
+          {{
+           "abbreviation": "string",
+            "tags": ["string"],
+            "title": "string",
+            "text": "string",
+            "queryResult": "string"
+    }}
+        ]
+      }}
+      Important rules:
+     1. Use the question to try and match the tags associated with each record from the context, in a similar or exact way.
+     2.Include only laws that contain relevant information.
+     3. The answer should be in the language that the qestion that is made by the user is asked in.When the law mentioned is in german check the question well to determine in what language the answer should be.
+     4. The answer should be detailed and comprehensive with a minium of 300 words.
+     5. If you're unsure or the information isn't in the documents, say so.
+     6. Answer in a clear, professional manner. Include relevant legal citations.
 
       Context: {context}
       Question: {question}
-
-  
-      Answer in a clear, professional manner. Include relevant legal citations.
-
-      The result should be in this json structure:
-      {{
-        abbreviation: string
-        tags: string[]
-        title: string
-        text: string
-        queryResult: string
-      }}
+   
       `);
 
     const ragChain = RunnableSequence.from([

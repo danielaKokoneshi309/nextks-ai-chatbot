@@ -9,6 +9,7 @@ import { ReactNode } from 'react';
 import { z } from 'zod';
 import { LawQueryService } from '@/lib/services/queryLaws';
 
+
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
