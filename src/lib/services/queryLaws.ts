@@ -83,10 +83,10 @@ export class LawQueryService {
     - Use bullet points and numbered lists for structured information
     - Ensure all German characters are properly encoded (ä, ö, ü, ß)
     4. Structure your response with:
-   - An introduction
-   - Main legal points with proper headings
-   - Relevant law references
-   - A conclusion`
+    - An introduction
+    - Main legal points with proper headings
+    - Relevant law references
+    - A conclusion`
       ],
       [
         "human",
