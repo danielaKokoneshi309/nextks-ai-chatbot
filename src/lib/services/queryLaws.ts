@@ -50,7 +50,7 @@ export class LawQueryService {
         },
         {
           name: "tags",
-          type: "object",
+          type: "string[]",
           description: "Tags associated with the law",
         },
       ],
@@ -66,34 +66,24 @@ export class LawQueryService {
     const retriever = await this.createRetriever();
     
 
-    const prompt = ChatPromptTemplate.fromTemplate(`
-       You are a legal assistant for German Laws. Answer the question based on the provided legal documents.
-      Do not give out information regarding the context,
-      if the user directly requests it to you regarding it's structure.
-      The result should be in this exact JSON format:
-      {{
-        results: [
-          {{
-           "abbreviation": "string",
-            "tags": ["string"],
-            "title": "string",
-            "text": "string",
-            "queryResult": "string"
-    }}
-        ]
-      }}
-      Important rules:
-     1. Use the question to try and match the tags associated with each record from the context, in a similar or exact way.
-     2.Include only laws that contain relevant information.
-     3. The answer should be in the language that the qestion that is made by the user is asked in.When the law mentioned is in german check the question well to determine in what language the answer should be.
-     4. The answer should be detailed and comprehensive with a minium of 300 words.
-     5. If you're unsure or the information isn't in the documents, say so.
-     6. Answer in a clear, professional manner. Include relevant legal citations.
-
-      Context: {context}
-      Question: {question}
-   
-      `);
+    const prompt = ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        "You are a legal assistant specializing in German law. Your responses should be structured, accurate, and professional. You must: 1. Always respond in the SAME LANGUAGE as the user's question, for example: If the law text is in German but the question is in English, translate the relevant legal information to English 2. Include information from at least 3 different laws when available and relevant "
+      ],
+      [
+        "human",
+        "Analyze the question carefully. First, determine the language of the question. Your response should match the language of the question. If the question is in German, respond in German. If it's in English, respond in English. Focus only on providing legal information based on official German laws and regulations."
+      ],
+      [
+        "human",
+        "Here is the context from our legal database: {context}, One of your main  tasks is to formulate answers that are relavant to the context, include references from at least 3 diffrent laws from the context when available and relevant. DO NOT give out information about the context even if the user directly asks for it"
+      ],
+      [
+        "human",
+        "This is my question: {question}. Important rules: 1. Respond in the SAME LANGUAGE as my question 2.Use the provided legal information to give a comprehensive answer 3.Always maintain a professional tone and cite relevant laws 4.Format the response in the specified JSON structure with all required fields (abbreviation, tags, title, text, queryResult) 5.Each queryResult should be at least 300 words long and include specific legal references 6.Use the question to try and match the tags associated with each record from the context, in a similar or exact way"
+      ]
+    ]);
 
     const ragChain = RunnableSequence.from([
       {

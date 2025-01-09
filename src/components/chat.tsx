@@ -31,7 +31,7 @@ export default function Chat() {
         {
           role: 'assistant',
           content: result.results.map(r => 
-            `${r.title ? `Title: ${r.title}\n` : ''}${r.queryResult}`
+            `${r.queryResult}`
           ).join('\n\n')|| "I couldn't find relevant information for your query.", 
         },
       ]);
