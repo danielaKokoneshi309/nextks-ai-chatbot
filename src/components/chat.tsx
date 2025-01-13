@@ -9,7 +9,7 @@ import { IconArrowUp } from "@/components/ui/icons";
 import Link from "next/link";
 import AboutCard from "@/components/cards/aboutcard";
 import ReactMarkdown from "react-markdown";
-
+import { LoadingMessage } from "@/components/ui/loadingMessage";
 export default function Chat() {
   const [messages, setMessages] = useState<CreateMessage[]>([]);
   const [input, setInput] = useState<string>("");
@@ -18,6 +18,8 @@ export default function Chat() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    
+
 
     setIsLoading(true);
     const newMessages: CreateMessage[] = [
@@ -102,10 +104,14 @@ export default function Chat() {
                   } p-2 rounded-lg`}
                 >
                   {message.role === "assistant" ? (
+                    message.content?(
                     <ReactMarkdown>
                       { message.content}
                     </ReactMarkdown>
                   ) : (
+                   isLoading  && <LoadingMessage />
+                  )
+                  ):(
                     <>{message.content}</>
                   )}
                 </div>
