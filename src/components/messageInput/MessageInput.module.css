@@ -1,0 +1,19 @@
+.input {
+  width: 95%;
+  margin-right: 0.5rem;
+  border: 0;
+  overflow-y: hidden;
+  resize: none;
+  word-wrap: break-word;
+  line-height: 1.5;
+  min-height: 40px;
+  max-height: 400px !important;
+  overflow-y: auto;
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border: transparent;
+  border-radius: 1rem;
+}

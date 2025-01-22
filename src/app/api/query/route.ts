@@ -1,16 +1,22 @@
-import { NextResponse } from 'next/server';
-import { LawQueryService } from '@/lib/services/queryLaws';
+import { NextResponse } from "next/server";
+import { LawQueryService } from "@/lib/services/queryLaws";
+import { error_messages } from "../../../constants/error-messages";
 
 export async function PUT(req: Request) {
   try {
-    const { query } = await req.json();
+    const { query, conversationHistory } = await req.json();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const generator = LawQueryService.QueryLaws(query);
+          const generator = LawQueryService.QueryLaws(
+            query,
+            conversationHistory
+          );
           for await (const chunk of generator) {
             if (chunk.queryResult) {
-              controller.enqueue(JSON.stringify({ queryResult: chunk.queryResult }) + '\n');
+              controller.enqueue(
+                JSON.stringify({ queryResult: chunk.queryResult }) + "\n"
+              );
             }
           }
           controller.close();
@@ -22,13 +28,18 @@ export async function PUT(req: Request) {
 
     return new NextResponse(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {
-    console.error('Query error:', error);
-    return NextResponse.json({ error: 'I apologize, but I am currently experiencing high demand. Please try again in a few moments or rephrase your question to be more specific.'  }, { status: 500 });
+    console.error("Query error:", error);
+    return NextResponse.json(
+      {
+        error: error_messages.HIGH_DEMAND,
+      },
+      { status: 500 }
+    );
   }
-} 
+}
